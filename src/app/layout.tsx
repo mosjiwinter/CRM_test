@@ -3,6 +3,7 @@ import './globals.css';
 import { AppLayout } from '@/components/app-layout';
 import { Toaster } from "@/components/ui/toaster"
 import { LanguageProvider } from '@/lib/i18n';
+import { AppProvider } from '@/lib/app-context';
 
 export const metadata: Metadata = {
   title: 'BizSight',
@@ -23,9 +24,11 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <LanguageProvider>
-          <AppLayout>
-            {children}
-          </AppLayout>
+          <AppProvider>
+            <AppLayout>
+              {children}
+            </AppLayout>
+          </AppProvider>
           <Toaster />
         </LanguageProvider>
       </body>

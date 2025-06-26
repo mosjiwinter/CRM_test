@@ -1,16 +1,14 @@
 'use client';
 
-import { useState } from 'react';
 import { DollarSign, Wallet, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { OverviewChart } from '@/components/dashboard/overview-chart';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
 import { AIInsights } from '@/components/dashboard/ai-insights';
-import { initialTransactions } from '@/lib/data';
-import type { Transaction } from '@/lib/types';
+import { useAppContext } from '@/lib/app-context';
 
 export default function DashboardPage() {
-  const [transactions] = useState<Transaction[]>(initialTransactions);
+  const { transactions } = useAppContext();
 
   const totalRevenue = transactions
     .filter((t) => t.type === 'revenue')

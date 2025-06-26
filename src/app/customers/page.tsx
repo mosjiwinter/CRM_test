@@ -6,32 +6,18 @@ import { PlusCircle } from 'lucide-react';
 import { getColumns } from '@/components/customers/columns';
 import { DataTable } from '@/components/transactions/data-table';
 import { CustomerDialog } from '@/components/customers/customer-dialog';
-import { initialCustomers } from '@/lib/data';
 import type { Customer } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
+import { useAppContext } from '@/lib/app-context';
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const { customers, addOrUpdateCustomer, deleteCustomer } = useAppContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [customerToEdit, setCustomerToEdit] = useState<Customer | undefined>(undefined);
 
   const openDialog = (customer?: Customer) => {
     setCustomerToEdit(customer);
     setIsDialogOpen(true);
-  };
-  
-  const addOrUpdateCustomer = (customerData: Omit<Customer, 'createdAt'>) => {
-    setCustomers(current => {
-      const existing = current.find(t => t.id === customerData.id);
-      if (existing) {
-        return current.map(t => t.id === customerData.id ? { ...t, ...customerData } : t);
-      }
-      return [...current, { ...customerData, createdAt: new Date() }];
-    });
-  };
-  
-  const deleteCustomer = (id: string) => {
-    setCustomers(current => current.filter(t => t.id !== id));
   };
 
   const columns = getColumns(openDialog, deleteCustomer);

@@ -6,17 +6,17 @@ import { PlusCircle, Wand2, Loader2 } from 'lucide-react';
 import { getColumns } from '@/components/transactions/columns';
 import { DataTable } from '@/components/transactions/data-table';
 import { TransactionDialog } from '@/components/transactions/transaction-dialog';
-import { initialTransactions } from '@/lib/data';
 import type { Transaction } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { createTransactionFromTextAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
+import { useAppContext } from '@/lib/app-context';
 
 export default function ExpensesPage() {
-  const [transactions, setTransactions] = useState<Transaction[]>(
-    initialTransactions.filter((t) => t.type === 'expense')
-  );
+  const { transactions, addOrUpdateTransaction, deleteTransaction } = useAppContext();
+  const expenseTransactions = transactions.filter((t) => t.type === 'expense');
+
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [transactionToEdit, setTransactionToEdit] = useState<Transaction | undefined>(undefined);
 
@@ -29,20 +29,10 @@ export default function ExpensesPage() {
     setIsDialogOpen(true);
   };
   
-  const addOrUpdateTransaction = (transactionData: Omit<Transaction, 'type'>) => {
-    setTransactions(current => {
-      const existing = current.find(t => t.id === transactionData.id);
-      if (existing) {
-        return current.map(t => t.id === transactionData.id ? { ...t, ...transactionData, type: 'expense' } : t);
-      }
-      return [...current, { ...transactionData, type: 'expense'}];
-    });
+  const handleDialogSave = (transactionData: Omit<Transaction, 'type'>) => {
+    addOrUpdateTransaction(transactionData, 'expense');
   };
   
-  const deleteTransaction = (id: string) => {
-    setTransactions(current => current.filter(t => t.id !== id));
-  };
-
   const handleAICreate = () => {
     if (!aiInput.trim()) return;
 
@@ -63,7 +53,7 @@ export default function ExpensesPage() {
             date: new Date(result.data.date),
         };
         setAiInput('');
-        openDialog(partialTransaction);
+        openDialog(partialTransaction as Transaction);
       } else {
          toast({
             variant: "destructive",
@@ -101,14 +91,14 @@ export default function ExpensesPage() {
       </div>
       <Card>
         <CardContent className="pt-6">
-          <DataTable columns={columns} data={transactions} filterKey="description" filterPlaceholder="Filter by description..." />
+          <DataTable columns={columns} data={expenseTransactions} filterKey="description" filterPlaceholder="Filter by description..." />
         </CardContent>
       </Card>
       <TransactionDialog
         isOpen={isDialogOpen}
         setIsOpen={setIsDialogOpen}
         type="expense"
-        addOrUpdateTransaction={addOrUpdateTransaction}
+        addOrUpdateTransaction={handleDialogSave}
         transactionToEdit={transactionToEdit}
       />
     </main>

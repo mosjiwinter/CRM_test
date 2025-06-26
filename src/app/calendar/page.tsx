@@ -3,11 +3,11 @@
 import { useState } from 'react';
 import { AppointmentCalendar } from '@/components/calendar/appointment-calendar';
 import { AppointmentDialog } from '@/components/calendar/appointment-dialog';
-import { initialAppointments } from '@/lib/data';
 import type { Appointment } from '@/lib/types';
+import { useAppContext } from '@/lib/app-context';
 
 export default function CalendarPage() {
-  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
+  const { appointments, addOrUpdateAppointment, deleteAppointment } = useAppContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [appointmentToEdit, setAppointmentToEdit] = useState<Appointment | undefined>(undefined);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -15,21 +15,6 @@ export default function CalendarPage() {
   const openDialog = (appointment?: Appointment) => {
     setAppointmentToEdit(appointment);
     setIsDialogOpen(true);
-  };
-  
-  const addOrUpdateAppointment = (appointmentData: Omit<Appointment, 'id' | 'createdAt'>) => {
-    setAppointments(current => {
-      const existing = appointmentToEdit ? current.find(t => t.id === appointmentToEdit.id) : undefined;
-      
-      if (existing) {
-        return current.map(t => t.id === existing.id ? { ...existing, ...appointmentData } : t);
-      }
-      return [...current, { ...appointmentData, id: new Date().toISOString() }];
-    });
-  };
-  
-  const deleteAppointment = (id: string) => {
-    setAppointments(current => current.filter(t => t.id !== id));
   };
 
   return (
