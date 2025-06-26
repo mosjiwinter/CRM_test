@@ -55,7 +55,7 @@ export function ExpenseBreakdownChart({ transactions }: { transactions: Transact
                 <CardTitle>Expense Breakdown</CardTitle>
                 <CardDescription>Your spending by category.</CardDescription>
             </CardHeader>
-            <CardContent className="flex h-[250px] w-full items-center justify-center">
+            <CardContent className="flex h-[328px] w-full items-center justify-center">
                 <p className="text-muted-foreground">No expense data available.</p>
             </CardContent>
         </Card>
@@ -76,7 +76,10 @@ export function ExpenseBreakdownChart({ transactions }: { transactions: Transact
           <PieChart>
             <ChartTooltip
               cursor={false}
-              content={<ChartTooltipContent hideLabel />}
+              content={<ChartTooltipContent 
+                hideLabel 
+                formatter={(value) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value as number)}
+              />}
             />
             <Pie
               data={chartData}

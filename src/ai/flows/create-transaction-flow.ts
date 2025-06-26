@@ -10,6 +10,7 @@
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
 import {format} from 'date-fns';
+import {CreateTransactionOutputSchema, type CreateTransactionOutput} from './transaction-schema';
 
 const CreateTransactionInputSchema = z.object({
   text: z.string().describe('The natural language text describing the transaction.'),
@@ -17,14 +18,6 @@ const CreateTransactionInputSchema = z.object({
 });
 export type CreateTransactionInput = z.infer<typeof CreateTransactionInputSchema>;
 
-const CreateTransactionOutputSchema = z.object({
-  description: z.string().describe("A concise description of the transaction."),
-  category: z.string().describe("A relevant category for the transaction (e.g., 'Client Work', 'Software', 'Office Supplies')."),
-  amount: z.number().describe("The transaction amount as a positive number."),
-  type: z.enum(['revenue', 'expense']).describe("The type of transaction."),
-  date: z.string().describe("The date of the transaction in 'YYYY-MM-DD' format."),
-});
-export type CreateTransactionOutput = z.infer<typeof CreateTransactionOutputSchema>;
 
 export async function createTransactionFromText(input: {text: string}): Promise<CreateTransactionOutput> {
   const flowInput: CreateTransactionInput = {

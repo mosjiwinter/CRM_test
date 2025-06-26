@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useState, useTransition, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { PlusCircle, Wand2, Loader2 } from 'lucide-react';
+import { PlusCircle, Wand2, Loader2, ScanLine } from 'lucide-react';
 import { getColumns } from '@/components/transactions/columns';
 import { DataTable } from '@/components/transactions/data-table';
 import { TransactionDialog } from '@/components/transactions/transaction-dialog';
 import type { Transaction } from '@/lib/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { createTransactionFromTextAction } from '@/app/actions';
+import { createTransactionFromTextAction, createTransactionFromImageAction } from '@/app/actions';
 import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/lib/app-context';
 
@@ -23,6 +23,7 @@ export default function RevenuePage() {
   const [isPending, startTransition] = useTransition();
   const [aiInput, setAiInput] = useState('');
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const openDialog = (transaction?: Transaction) => {
     setTransactionToEdit(transaction);
@@ -63,6 +64,52 @@ export default function RevenuePage() {
       }
     });
   };
+  
+  const handleScanClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const imageDataUri = e.target?.result as string;
+      if (!imageDataUri) return;
+
+      startTransition(async () => {
+        const result = await createTransactionFromImageAction(imageDataUri);
+        if (result.success && result.data) {
+            if (result.data.type !== 'revenue') {
+                toast({
+                    variant: "destructive",
+                    title: "Incorrect Transaction Type",
+                    description: "The AI detected an expense. Please add it on the Expenses page.",
+                });
+                return;
+            }
+            const partialTransaction = {
+                ...result.data,
+                id: '',
+                date: new Date(result.data.date),
+            };
+            openDialog(partialTransaction as Transaction);
+        } else {
+            toast({
+                variant: "destructive",
+                title: "AI Error",
+                description: result.error || "Could not generate transaction from image.",
+            });
+        }
+      });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
 
   const columns = getColumns(openDialog, deleteTransaction);
 
@@ -82,7 +129,19 @@ export default function RevenuePage() {
                 <span>Create with AI</span>
             </Button>
         </div>
-        <div className="flex-none">
+        <div className="flex-none flex items-center gap-2">
+            <Button onClick={handleScanClick} variant="outline" disabled={isPending} className="w-full md:w-auto">
+                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
+                Scan Invoice
+            </Button>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              accept="image/*"
+              className="hidden"
+              disabled={isPending}
+            />
             <Button onClick={() => openDialog()} className="w-full md:w-auto">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Revenue

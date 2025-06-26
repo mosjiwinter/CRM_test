@@ -2,6 +2,7 @@
 
 import { generateInsight } from '@/ai/flows/generate-insight';
 import { createTransactionFromText } from '@/ai/flows/create-transaction-flow';
+import { createTransactionFromImage } from '@/ai/flows/create-transaction-from-image-flow';
 import type { Transaction } from '@/lib/types';
 
 export async function getAiInsights(transactions: Transaction[]) {
@@ -34,5 +35,15 @@ export async function createTransactionFromTextAction(text: string) {
     } catch (error) {
         console.error('Error creating transaction from text:', error);
         return { success: false, error: 'Failed to parse transaction from text. Please try again or enter manually.' };
+    }
+}
+
+export async function createTransactionFromImageAction(imageDataUri: string) {
+    try {
+        const result = await createTransactionFromImage({ imageDataUri });
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Error creating transaction from image:', error);
+        return { success: false, error: 'Failed to parse transaction from image. Please try again or enter manually.' };
     }
 }
