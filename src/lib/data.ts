@@ -1,4 +1,4 @@
-import type { Transaction, Appointment } from './types';
+import type { Transaction, Appointment, Customer } from './types';
 
 export const initialTransactions: Transaction[] = [
   { id: '1', type: 'revenue', date: new Date('2024-05-01'), amount: 2500, description: 'Web Design Project', category: 'Client Work' },
@@ -18,4 +18,10 @@ export const initialAppointments: Appointment[] = [
   { id: '2', title: 'Design Review', date: new Date(new Date().setDate(new Date().getDate() + 5)), description: 'Review the latest design mockups.' },
   { id: '3', title: 'Follow-up with John Doe', date: new Date(new Date().setDate(new Date().getDate() + 5)), description: 'Discuss potential collaboration.' },
   { id: '4', title: 'Accountant Meeting', date: new Date(new Date().setDate(new Date().getDate() + 10)), description: 'Quarterly financial review.' },
+];
+
+export const initialCustomers: Customer[] = [
+  { id: '1', name: 'John Doe', email: 'john.doe@acme.com', phone: '123-456-7890', company: 'Acme Inc.', createdAt: new Date('2024-01-15') },
+  { id: '2', name: 'Jane Smith', email: 'jane.smith@globex.com', phone: '987-654-3210', company: 'Globex Corporation', createdAt: new Date('2024-02-20') },
+  { id: '3', name: 'Peter Jones', email: 'peter.jones@stark.com', phone: '555-123-4567', company: 'Stark Industries', createdAt: new Date('2024-03-10') },
 ];

@@ -48,7 +48,7 @@ export default function ExpensesPage() {
       </div>
       <Card>
         <CardContent className="pt-6">
-          <DataTable columns={columns} data={transactions} />
+          <DataTable columns={columns} data={transactions} filterKey="description" filterPlaceholder="Filter by description..." />
         </CardContent>
       </Card>
       <TransactionDialog
