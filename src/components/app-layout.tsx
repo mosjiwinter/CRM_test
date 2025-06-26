@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -23,11 +24,19 @@ import {
   Calendar,
   Settings,
   Users,
-  Languages,
   User,
+  LogOut,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageSwitcher } from './language-switcher';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -51,7 +60,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon">
+      <Sidebar collapsible="icon" variant="inset">
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <Logo className="size-8 text-primary" />
@@ -79,29 +88,47 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarContent>
 
         <SidebarFooter>
-          <SidebarMenu>
-            {footerMenuItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
-                  asChild
-                  isActive={pathname === item.href}
-                  tooltip={item.label}
+                    variant="ghost"
+                    className="h-auto w-full justify-start p-2"
+                    tooltip={{ children: 'Shad CN', side: 'right' }}
                 >
-                  <Link href={item.href}>
-                    {item.href === '/profile' ? (
-                      <Avatar className="size-7">
-                        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                        <AvatarFallback>CN</AvatarFallback>
-                      </Avatar>
-                    ) : (
-                      <item.icon />
-                    )}
-                    <span>{item.label}</span>
-                  </Link>
+                    <Avatar className="size-8">
+                    <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                    <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                    <div className="ml-2 flex flex-col items-start group-data-[collapsible=icon]:hidden">
+                    <span className="font-semibold text-sm">Shad CN</span>
+                    <span className="text-xs text-muted-foreground">
+                        ui@shadcn.com
+                    </span>
+                    </div>
                 </SidebarMenuButton>
-              </SidebarMenuItem>
-            ))}
-          </SidebarMenu>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="right" align="start" className="w-56">
+                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <Link href="/profile">
+                    <DropdownMenuItem>
+                    <User className="mr-2" />
+                    <span>{t('Navigation.userProfile')}</span>
+                    </DropdownMenuItem>
+                </Link>
+                <Link href="/settings">
+                    <DropdownMenuItem>
+                    <Settings className="mr-2" />
+                    <span>{t('Navigation.settings')}</span>
+                    </DropdownMenuItem>
+                </Link>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem disabled>
+                    <LogOut className="mr-2" />
+                    <span>Log out</span>
+                </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
