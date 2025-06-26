@@ -1,22 +1,35 @@
 'use client';
 
-import { useState } from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
-import { initialAppointments } from '@/lib/data';
 import type { Appointment } from '@/lib/types';
 import { format } from 'date-fns';
-import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button';
+import { PlusCircle, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 
-export function AppointmentCalendar() {
-  const [appointments] = useState<Appointment[]>(initialAppointments);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+type AppointmentCalendarProps = {
+    appointments: Appointment[];
+    openDialog: (appointment?: Appointment) => void;
+    deleteAppointment: (id: string) => void;
+    selectedDate: Date | undefined;
+    setSelectedDate: Dispatch<SetStateAction<Date | undefined>>;
+};
+
+export function AppointmentCalendar({ 
+    appointments, 
+    openDialog, 
+    deleteAppointment,
+    selectedDate,
+    setSelectedDate,
+}: AppointmentCalendarProps) {
 
   const appointmentsOnSelectedDay = selectedDate
     ? appointments.filter(
         (appointment) =>
           appointment.date.toDateString() === selectedDate.toDateString()
-      )
+      ).sort((a,b) => a.date.getTime() - b.date.getTime())
     : [];
 
   const appointmentDays = appointments.map((appointment) => appointment.date);
@@ -57,22 +70,49 @@ export function AppointmentCalendar() {
         </Card>
         <Card className="lg:col-span-3">
             <CardHeader>
-            <CardTitle>
-                Appointments for{' '}
-                {selectedDate ? format(selectedDate, 'PPP') : 'today'}
-            </CardTitle>
-            <CardDescription>
-                You have {appointmentsOnSelectedDay.length} appointment(s) scheduled.
-            </CardDescription>
+                <div className="flex justify-between items-start">
+                    <div>
+                        <CardTitle>
+                            Appointments for{' '}
+                            {selectedDate ? format(selectedDate, 'PPP') : 'today'}
+                        </CardTitle>
+                        <CardDescription>
+                            You have {appointmentsOnSelectedDay.length} appointment(s) scheduled.
+                        </CardDescription>
+                    </div>
+                    <Button onClick={() => openDialog()}>
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add
+                    </Button>
+                </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-2">
             {appointmentsOnSelectedDay.length > 0 ? (
                 appointmentsOnSelectedDay.map((appointment) => (
-                    <div key={appointment.id}>
-                        <div className="font-semibold">{appointment.title}</div>
+                    <div key={appointment.id} className="rounded-lg border p-3">
+                        <div className="flex justify-between items-center">
+                            <div className="font-semibold">{appointment.title}</div>
+                             <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => openDialog(appointment)}>
+                                        <Edit className="mr-2 h-4 w-4" />
+                                        Edit
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-destructive" onClick={() => deleteAppointment(appointment.id)}>
+                                        <Trash2 className="mr-2 h-4 w-4" />
+                                        Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                         <p className="text-sm text-muted-foreground">{appointment.description}</p>
                         <p className="text-xs text-muted-foreground">{format(appointment.date, 'p')}</p>
-                        <Separator className="my-2" />
                     </div>
                 ))
             ) : (
