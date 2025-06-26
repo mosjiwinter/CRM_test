@@ -1,6 +1,7 @@
 'use server';
 
 import { generateInsight } from '@/ai/flows/generate-insight';
+import { createTransactionFromText } from '@/ai/flows/create-transaction-flow';
 import type { Transaction } from '@/lib/types';
 
 export async function getAiInsights(transactions: Transaction[]) {
@@ -24,4 +25,14 @@ export async function getAiInsights(transactions: Transaction[]) {
     console.error('Error generating insights:', error);
     return 'We had trouble generating insights. Please try again later.';
   }
+}
+
+export async function createTransactionFromTextAction(text: string) {
+    try {
+        const result = await createTransactionFromText({ text });
+        return { success: true, data: result };
+    } catch (error) {
+        console.error('Error creating transaction from text:', error);
+        return { success: false, error: 'Failed to parse transaction from text. Please try again or enter manually.' };
+    }
 }
