@@ -24,6 +24,7 @@ import {
   Settings,
   Users,
   Languages,
+  User,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageSwitcher } from './language-switcher';
@@ -40,7 +41,13 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { href: '/customers', label: t('Navigation.customers'), icon: Users },
   ];
 
-  const pageTitle = menuItems.find(item => item.href === pathname)?.label || t('Navigation.dashboard');
+  const footerMenuItems = [
+    { href: '/settings', label: t('Navigation.settings'), icon: Settings },
+    { href: '/profile', label: t('Navigation.userProfile'), icon: User },
+  ];
+
+  const allPages = [...menuItems, ...footerMenuItems];
+  const pageTitle = allPages.find((item) => item.href === pathname)?.label || t('Navigation.dashboard');
 
   return (
     <SidebarProvider>
@@ -73,21 +80,27 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
         <SidebarFooter>
           <SidebarMenu>
-            <SidebarMenuItem>
-              <SidebarMenuButton tooltip={t('Navigation.settings')}>
-                <Settings />
-                <span>{t('Navigation.settings')}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-            <SidebarMenuItem>
-              <SidebarMenuButton>
-                <Avatar className="size-7">
-                  <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
-                  <AvatarFallback>CN</AvatarFallback>
-                </Avatar>
-                <span>{t('Navigation.userProfile')}</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
+            {footerMenuItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton
+                  asChild
+                  isActive={pathname === item.href}
+                  tooltip={item.label}
+                >
+                  <Link href={item.href}>
+                    {item.href === '/profile' ? (
+                      <Avatar className="size-7">
+                        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+                        <AvatarFallback>CN</AvatarFallback>
+                      </Avatar>
+                    ) : (
+                      <item.icon />
+                    )}
+                    <span>{item.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            ))}
           </SidebarMenu>
         </SidebarFooter>
       </Sidebar>
