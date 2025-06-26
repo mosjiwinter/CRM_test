@@ -86,37 +86,42 @@ export function AppointmentCalendar({
                     </Button>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-2">
+            <CardContent className="space-y-4">
             {appointmentsOnSelectedDay.length > 0 ? (
                 appointmentsOnSelectedDay.map((appointment) => (
-                    <div key={appointment.id} className="rounded-lg border p-3">
-                        <div className="flex justify-between items-center">
-                            <div className="font-semibold">{appointment.title}</div>
-                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Open menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuItem onClick={() => openDialog(appointment)}>
-                                        <Edit className="mr-2 h-4 w-4" />
-                                        Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem className="text-destructive" onClick={() => deleteAppointment(appointment.id)}>
-                                        <Trash2 className="mr-2 h-4 w-4" />
-                                        Delete
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                    <div key={appointment.id} className="flex items-start gap-4 rounded-lg border p-3">
+                        <div className="mt-1.5 h-3 w-3 flex-shrink-0 rounded-full bg-primary" />
+                        <div className="flex-grow">
+                            <div className="flex justify-between items-center">
+                                <div className="font-semibold">{appointment.title}</div>
+                                 <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="h-8 w-8 p-0 -mr-2">
+                                        <span className="sr-only">Open menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuItem onClick={() => openDialog(appointment)}>
+                                            <Edit className="mr-2 h-4 w-4" />
+                                            Edit
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem className="text-destructive" onClick={() => deleteAppointment(appointment.id)}>
+                                            <Trash2 className="mr-2 h-4 w-4" />
+                                            Delete
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{appointment.description || <span className="italic">No description</span>}</p>
+                            <p className="text-xs text-muted-foreground">{format(appointment.date, 'p')}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">{appointment.description}</p>
-                        <p className="text-xs text-muted-foreground">{format(appointment.date, 'p')}</p>
                     </div>
                 ))
             ) : (
-                <p className="text-sm text-muted-foreground">No appointments for this day.</p>
+                <div className="flex h-full items-center justify-center">
+                    <p className="text-center text-sm text-muted-foreground py-8">No appointments for this day.</p>
+                </div>
             )}
             </CardContent>
         </Card>
