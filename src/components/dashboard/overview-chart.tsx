@@ -62,7 +62,7 @@ export function OverviewChart({ data }: { data: Transaction[] }) {
         revenue: dailyData[day].revenue,
         expenses: dailyData[day].expenses,
       }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      .sort((a, b) => a.date.localeCompare(b.date));
 
     const referenceDate = new Date();
     let daysToSubtract = 90;
@@ -73,7 +73,11 @@ export function OverviewChart({ data }: { data: Transaction[] }) {
     }
     const startDate = subDays(startOfDay(referenceDate), daysToSubtract);
 
-    return chartData.filter((item) => new Date(item.date) >= startDate);
+    return chartData.filter((item) => {
+      // Replace hyphens with slashes for robust date parsing across browsers
+      const itemDate = new Date(item.date.replace(/-/g, '/'));
+      return itemDate >= startDate;
+    });
   }, [data, timeRange]);
 
   return (
@@ -106,90 +110,90 @@ export function OverviewChart({ data }: { data: Transaction[] }) {
         </Select>
       </CardHeader>
       <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
-        <ChartContainer
-          config={chartConfig}
-          className="aspect-auto h-[250px] w-full"
-        >
-          <AreaChart data={filteredData} margin={{ left: 12, right: 12 }}>
-            <defs>
-              <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-revenue)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-revenue)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-              <linearGradient id="fillExpenses" x1="0" y1="0" x2="0" y2="1">
-                <stop
-                  offset="5%"
-                  stopColor="var(--color-expenses)"
-                  stopOpacity={0.8}
-                />
-                <stop
-                  offset="95%"
-                  stopColor="var(--color-expenses)"
-                  stopOpacity={0.1}
-                />
-              </linearGradient>
-            </defs>
-            <CartesianGrid vertical={false} />
-            <XAxis
-              dataKey="date"
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              minTickGap={32}
-              tickFormatter={(value) => {
-                const date = new Date(value);
-                return date.toLocaleDateString('en-US', {
-                  month: 'short',
-                  day: 'numeric',
-                });
-              }}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              tickMargin={8}
-              tickFormatter={(value) => `$${value}`}
-            />
-            <ChartTooltip
-              cursor={false}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(value) => {
-                    return new Date(value).toLocaleDateString('en-US', {
-                      month: 'short',
-                      day: 'numeric',
-                      year: 'numeric',
-                    });
-                  }}
-                  indicator="dot"
-                />
-              }
-            />
-            <Area
-              dataKey="expenses"
-              type="natural"
-              fill="url(#fillExpenses)"
-              stroke="var(--color-expenses)"
-              stackId="a"
-            />
-            <Area
-              dataKey="revenue"
-              type="natural"
-              fill="url(#fillRevenue)"
-              stroke="var(--color-revenue)"
-              stackId="a"
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-          </AreaChart>
-        </ChartContainer>
+        {filteredData.length > 0 ? (
+          <ChartContainer
+            config={chartConfig}
+            className="aspect-auto h-[250px] w-full"
+          >
+            <AreaChart data={filteredData} margin={{ left: 12, right: 12 }}>
+              <defs>
+                <linearGradient id="fillRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-revenue)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-revenue)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+                <linearGradient id="fillExpenses" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-expenses)"
+                    stopOpacity={0.8}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-expenses)"
+                    stopOpacity={0.1}
+                  />
+                </linearGradient>
+              </defs>
+              <CartesianGrid vertical={false} />
+              <XAxis
+                dataKey="date"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tickFormatter={(value) => {
+                  const date = new Date(value.replace(/-/g, '/'));
+                  return formatDate(date, 'd MMM');
+                }}
+              />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                tickFormatter={(value) => `$${value}`}
+              />
+              <ChartTooltip
+                cursor={false}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(value) => {
+                      const date = new Date(value.replace(/-/g, '/'));
+                      return formatDate(date, 'PPP');
+                    }}
+                    indicator="dot"
+                  />
+                }
+              />
+              <Area
+                dataKey="expenses"
+                type="natural"
+                fill="url(#fillExpenses)"
+                stroke="var(--color-expenses)"
+                stackId="a"
+              />
+              <Area
+                dataKey="revenue"
+                type="natural"
+                fill="url(#fillRevenue)"
+                stroke="var(--color-revenue)"
+                stackId="a"
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+            </AreaChart>
+          </ChartContainer>
+        ) : (
+          <div className="flex h-[250px] w-full items-center justify-center">
+            <p className="text-muted-foreground">No data for this period.</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
