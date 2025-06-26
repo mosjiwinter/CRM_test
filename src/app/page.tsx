@@ -18,7 +18,7 @@ import {
   rectSortingStrategy,
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, PlusCircle, Trash2 } from 'lucide-react';
 import { subDays, startOfDay, format, eachDayOfInterval } from 'date-fns';
 
 import { DollarSign, Wallet, ArrowUpRight, ArrowDownLeft, Users } from 'lucide-react';
@@ -28,8 +28,12 @@ import { RecentTransactions } from '@/components/dashboard/recent-transactions';
 import { useAppContext } from '@/lib/app-context';
 import { ExpenseBreakdownChart } from '@/components/dashboard/expense-breakdown-chart';
 import { RevenueBreakdownChart } from '@/components/dashboard/revenue-breakdown-chart';
+import { AIInsights } from '@/components/dashboard/ai-insights';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 
-function SortableItem({ id, children }: { id: string; children: React.ReactNode }) {
+function SortableItem({ id, children, onRemove }: { id: string; children: React.ReactNode; onRemove: (id: string) => void }) {
   const {
     attributes,
     listeners,
@@ -49,9 +53,22 @@ function SortableItem({ id, children }: { id: string; children: React.ReactNode 
     <div ref={setNodeRef} style={style} {...attributes}>
       <div className="relative group/sortable">
         {children}
-        <button {...listeners} className="absolute top-4 right-4 p-2 bg-card/50 rounded-md hover:bg-accent cursor-grab active:cursor-grabbing opacity-0 group-hover/sortable:opacity-100 focus:opacity-100 transition-opacity">
-          <GripVertical className="h-5 w-5 text-muted-foreground" />
-        </button>
+        <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover/sortable:opacity-100 focus-within:opacity-100 transition-opacity">
+            <button
+                onClick={() => onRemove(id)}
+                className="p-2 bg-card/70 rounded-md hover:bg-destructive hover:text-destructive-foreground focus:opacity-100 group"
+                aria-label="Remove widget"
+            >
+                <Trash2 className="h-4 w-4 text-muted-foreground group-hover:text-destructive-foreground" />
+            </button>
+            <button 
+                {...listeners} 
+                className="p-2 bg-card/70 rounded-md hover:bg-accent hover:text-accent-foreground cursor-grab active:cursor-grabbing focus:opacity-100 group"
+                aria-label="Drag to reorder"
+            >
+                <GripVertical className="h-4 w-4 text-muted-foreground group-hover:text-accent-foreground" />
+            </button>
+        </div>
       </div>
     </div>
   );
@@ -61,10 +78,37 @@ function SortableItem({ id, children }: { id: string; children: React.ReactNode 
 export default function DashboardPage() {
   const { transactions, customers } = useAppContext();
   const [isMounted, setIsMounted] = useState(false);
+  const [isAddWidgetDialogOpen, setIsAddWidgetDialogOpen] = useState(false);
+
+  const allWidgets = useMemo(() => ({
+    overview: { name: 'Overview', component: <OverviewChart data={transactions} /> },
+    recent: { name: 'Recent Transactions', component: <RecentTransactions transactions={transactions} /> },
+    revenueBreakdown: { name: 'Revenue Breakdown', component: <RevenueBreakdownChart transactions={transactions} /> },
+    expenseBreakdown: { name: 'Expense Breakdown', component: <ExpenseBreakdownChart transactions={transactions} /> },
+    aiInsights: { name: 'AI Insights', component: <AIInsights transactions={transactions} /> },
+  }), [transactions]);
+
+  const [dashboardWidgets, setDashboardWidgets] = useState<string[]>(['overview', 'recent', 'revenueBreakdown', 'expenseBreakdown']);
 
   useEffect(() => {
+    const savedLayout = localStorage.getItem('dashboardLayout');
+    if (savedLayout) {
+      try {
+        const parsedLayout = JSON.parse(savedLayout);
+        const validWidgets = parsedLayout.filter((widgetId: string) => allWidgets.hasOwnProperty(widgetId));
+        setDashboardWidgets(validWidgets);
+      } catch (e) {
+        setDashboardWidgets(['overview', 'recent', 'revenueBreakdown', 'expenseBreakdown']);
+      }
+    }
     setIsMounted(true);
-  }, []);
+  }, [allWidgets]);
+
+  useEffect(() => {
+    if (isMounted) {
+      localStorage.setItem('dashboardLayout', JSON.stringify(dashboardWidgets));
+    }
+  }, [dashboardWidgets, isMounted]);
 
   const totalRevenue = transactions
     .filter((t) => t.type === 'revenue')
@@ -108,15 +152,6 @@ export default function DashboardPage() {
     })).sort((a, b) => a.date.localeCompare(b.date));
   }, [customers]);
 
-  const chartComponents = {
-    overview: <OverviewChart data={transactions} />,
-    recent: <RecentTransactions transactions={transactions} />,
-    revenueBreakdown: <RevenueBreakdownChart transactions={transactions} />,
-    expenseBreakdown: <ExpenseBreakdownChart transactions={transactions} />,
-  };
-
-  const [chartOrder, setChartOrder] = useState<string[]>(['overview', 'recent', 'revenueBreakdown', 'expenseBreakdown']);
-
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -127,13 +162,28 @@ export default function DashboardPage() {
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (over && active.id !== over.id) {
-      setChartOrder((items) => {
+      setDashboardWidgets((items) => {
         const oldIndex = items.indexOf(active.id as string);
         const newIndex = items.indexOf(over.id as string);
         return arrayMove(items, oldIndex, newIndex);
       });
     }
   }
+  
+  const removeWidget = (id: string) => {
+    setDashboardWidgets(widgets => widgets.filter(widgetId => widgetId !== id));
+  };
+  
+  const addWidget = (id: string) => {
+    if (!dashboardWidgets.includes(id)) {
+        setDashboardWidgets(widgets => [...widgets, id]);
+    }
+    setIsAddWidgetDialogOpen(false);
+  };
+
+  const availableWidgets = Object.keys(allWidgets).filter(
+    (widgetId) => !dashboardWidgets.includes(widgetId)
+  );
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -166,17 +216,24 @@ export default function DashboardPage() {
         />
       </div>
 
+      <div className="flex items-center justify-end">
+        <Button onClick={() => setIsAddWidgetDialogOpen(true)}>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Widget
+        </Button>
+      </div>
+
       {isMounted ? (
         <DndContext
           sensors={sensors}
           collisionDetection={closestCenter}
           onDragEnd={handleDragEnd}
         >
-          <SortableContext items={chartOrder} strategy={rectSortingStrategy}>
+          <SortableContext items={dashboardWidgets} strategy={rectSortingStrategy}>
             <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
-              {chartOrder.map((id) => (
-                <SortableItem key={id} id={id}>
-                  {chartComponents[id as keyof typeof chartComponents]}
+              {dashboardWidgets.map((id) => (
+                <SortableItem key={id} id={id} onRemove={removeWidget}>
+                  {allWidgets[id as keyof typeof allWidgets].component}
                 </SortableItem>
               ))}
             </div>
@@ -184,13 +241,41 @@ export default function DashboardPage() {
         </DndContext>
       ) : (
         <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
-          {chartOrder.map((id) => (
+          {dashboardWidgets.map((id) => (
             <div key={id}>
-                {chartComponents[id as keyof typeof chartComponents]}
+                {allWidgets[id as keyof typeof allWidgets].component}
             </div>
           ))}
         </div>
       )}
+
+      <Dialog open={isAddWidgetDialogOpen} onOpenChange={setIsAddWidgetDialogOpen}>
+        <DialogContent>
+            <DialogHeader>
+                <DialogTitle>Add a widget to your dashboard</DialogTitle>
+                <DialogDescription>
+                    Select a widget to add. You can reorder and remove them later.
+                </DialogDescription>
+            </DialogHeader>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+                {availableWidgets.length > 0 ? (
+                    availableWidgets.map(widgetId => (
+                        <Card 
+                            key={widgetId} 
+                            onClick={() => addWidget(widgetId)}
+                            className="cursor-pointer hover:border-primary hover:shadow-lg transition-all"
+                        >
+                            <CardHeader>
+                                <CardTitle className="text-lg">{allWidgets[widgetId as keyof typeof allWidgets].name}</CardTitle>
+                            </CardHeader>
+                        </Card>
+                    ))
+                ) : (
+                    <p className="text-muted-foreground md:col-span-2 text-center">All available widgets are already on your dashboard.</p>
+                )}
+            </div>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
