@@ -5,6 +5,7 @@ export const translations = {
     expenses: "รายจ่าย",
     calendar: "ปฏิทิน",
     customers: "ลูกค้า",
+    projects: "โปรเจกต์",
     settings: "ตั้งค่า",
     userProfile: "โปรไฟล์ผู้ใช้"
   },

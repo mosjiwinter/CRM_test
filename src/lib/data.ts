@@ -1,4 +1,4 @@
-import type { Transaction, Appointment, Customer } from './types';
+import type { Transaction, Appointment, Customer, Project } from './types';
 
 // Get today's date to make the data recent
 const today = new Date();
@@ -27,4 +27,11 @@ export const initialCustomers: Customer[] = [
   { id: '1', name: 'John Doe', email: 'john.doe@acme.com', phone: '123-456-7890', company: 'Acme Inc.', createdAt: new Date('2024-01-15') },
   { id: '2', name: 'Jane Smith', email: 'jane.smith@globex.com', phone: '987-654-3210', company: 'Globex Corporation', createdAt: new Date('2024-02-20') },
   { id: '3', name: 'Peter Jones', email: 'peter.jones@stark.com', phone: '555-123-4567', company: 'Stark Industries', createdAt: new Date('2024-03-10') },
+];
+
+export const initialProjects: Project[] = [
+  { id: 'proj-1', name: 'New Website Design', customerId: '1', status: 'In Progress', deadline: new Date(new Date().setDate(new Date().getDate() + 30)) },
+  { id: 'proj-2', name: 'Marketing Campaign Q3', customerId: '2', status: 'Not Started', deadline: new Date(new Date().setDate(new Date().getDate() + 60)) },
+  { id: 'proj-3', name: 'Mobile App CI/CD', customerId: '1', status: 'Completed', deadline: new Date(new Date().setDate(new Date().getDate() - 15)) },
+  { id: 'proj-4', name: 'Iron Suit MK II', customerId: '3', status: 'In Progress', deadline: new Date(new Date().setDate(new Date().getDate() + 90)) },
 ];

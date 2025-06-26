@@ -22,3 +22,11 @@ export type Customer = {
   company: string;
   createdAt: Date;
 };
+
+export type Project = {
+  id: string;
+  name: string;
+  customerId: string;
+  status: 'Not Started' | 'In Progress' | 'Completed';
+  deadline: Date;
+};

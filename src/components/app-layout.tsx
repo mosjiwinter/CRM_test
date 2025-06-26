@@ -26,6 +26,7 @@ import {
   Users,
   User,
   LogOut,
+  Briefcase,
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageSwitcher } from './language-switcher';
@@ -48,6 +49,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
     { href: '/expenses', label: t('Navigation.expenses'), icon: TrendingDown },
     { href: '/calendar', label: t('Navigation.calendar'), icon: Calendar },
     { href: '/customers', label: t('Navigation.customers'), icon: Users },
+    { href: '/projects', label: t('Navigation.projects'), icon: Briefcase },
   ];
 
   const footerMenuItems = [

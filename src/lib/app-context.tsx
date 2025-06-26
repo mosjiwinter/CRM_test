@@ -2,19 +2,22 @@
 
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState } from 'react';
-import type { Transaction, Appointment, Customer } from '@/lib/types';
-import { initialTransactions, initialAppointments, initialCustomers } from '@/lib/data';
+import type { Transaction, Appointment, Customer, Project } from '@/lib/types';
+import { initialTransactions, initialAppointments, initialCustomers, initialProjects } from '@/lib/data';
 
 type AppContextType = {
   transactions: Transaction[];
   appointments: Appointment[];
   customers: Customer[];
+  projects: Project[];
   addOrUpdateTransaction: (transactionData: Partial<Omit<Transaction, 'type'>>, type: 'revenue' | 'expense') => void;
   deleteTransaction: (id: string) => void;
   addOrUpdateAppointment: (appointmentData: Partial<Appointment>) => void;
   deleteAppointment: (id: string) => void;
   addOrUpdateCustomer: (customerData: Partial<Customer>) => void;
   deleteCustomer: (id: string) => void;
+  addOrUpdateProject: (projectData: Partial<Project>) => void;
+  deleteProject: (id: string) => void;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -23,6 +26,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
   const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
   const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
 
   const addOrUpdateTransaction = (transactionData: Partial<Omit<Transaction, 'type'>>, type: 'revenue' | 'expense') => {
     setTransactions(current => {
@@ -82,16 +86,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setCustomers(current => current.filter(c => c.id !== id));
   };
 
+  const addOrUpdateProject = (projectData: Partial<Project>) => {
+    setProjects(current => {
+      const id = projectData.id || new Date().toISOString();
+      const newProject = { ...projectData, id } as Project;
+      const existingIndex = current.findIndex(p => p.id === id);
+
+      if (existingIndex !== -1) {
+        const updated = [...current];
+        updated[existingIndex] = { ...current[existingIndex], ...newProject };
+        return updated;
+      }
+      return [...current, newProject];
+    });
+  };
+
+  const deleteProject = (id: string) => {
+    setProjects(current => current.filter(p => p.id !== id));
+  };
+
   const value = {
     transactions,
     appointments,
     customers,
+    projects,
     addOrUpdateTransaction,
     deleteTransaction,
     addOrUpdateAppointment,
     deleteAppointment,
     addOrUpdateCustomer,
     deleteCustomer,
+    addOrUpdateProject,
+    deleteProject,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
