@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -38,6 +37,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { AiChatButton } from '@/components/dashboard/ai-chat-button';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -145,6 +145,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </header>
         {children}
       </SidebarInset>
+      <AiChatButton />
     </SidebarProvider>
   );
 }
