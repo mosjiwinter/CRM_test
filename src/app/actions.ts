@@ -3,6 +3,7 @@
 import { generateInsight } from '@/ai/flows/generate-insight';
 import { createTransactionFromText } from '@/ai/flows/create-transaction-flow';
 import { createTransactionFromImage } from '@/ai/flows/create-transaction-from-image-flow';
+import { chat } from '@/ai/flows/chat-flow';
 import type { Transaction } from '@/lib/types';
 
 export async function getAiInsights(transactions: Transaction[]) {
@@ -45,5 +46,21 @@ export async function createTransactionFromImageAction(imageDataUri: string) {
     } catch (error) {
         console.error('Error creating transaction from image:', error);
         return { success: false, error: 'Failed to parse transaction from image. Please try again or enter manually.' };
+    }
+}
+
+export async function getAiChatResponse(history: { role: 'user' | 'model'; content: string }[], transactions: Transaction[]) {
+    try {
+        const sortData = (data: Transaction[]) => data.sort((a, b) => a.date.getTime() - b.date.getTime());
+        const allTransactions = sortData(transactions);
+
+        const result = await chat({
+            history,
+            transactions: JSON.stringify(allTransactions),
+        });
+        return { success: true, data: result.answer };
+    } catch (error) {
+        console.error('Error in chat flow:', error);
+        return { success: false, error: 'AI assistant is having trouble. Please try again later.' };
     }
 }
