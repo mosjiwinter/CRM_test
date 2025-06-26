@@ -22,18 +22,24 @@ import {
   Calendar,
   Settings,
   Users,
+  Languages,
 } from 'lucide-react';
-
-const menuItems = [
-  { href: '/', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/revenue', label: 'Revenue', icon: TrendingUp },
-  { href: '/expenses', label: 'Expenses', icon: TrendingDown },
-  { href: '/calendar', label: 'Calendar', icon: Calendar },
-  { href: '/customers', label: 'Customers', icon: Users },
-];
+import { useTranslation } from '@/lib/i18n';
+import { LanguageSwitcher } from './language-switcher';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { t } = useTranslation();
+
+  const menuItems = [
+    { href: '/', label: t('Navigation.dashboard'), icon: LayoutDashboard },
+    { href: '/revenue', label: t('Navigation.revenue'), icon: TrendingUp },
+    { href: '/expenses', label: t('Navigation.expenses'), icon: TrendingDown },
+    { href: '/calendar', label: t('Navigation.calendar'), icon: Calendar },
+    { href: '/customers', label: t('Navigation.customers'), icon: Users },
+  ];
+
+  const pageTitle = menuItems.find(item => item.href === pathname)?.label || t('Navigation.dashboard');
 
   return (
     <SidebarProvider>
@@ -65,9 +71,9 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <SidebarFooter>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton tooltip="Settings">
+              <SidebarMenuButton tooltip={t('Navigation.settings')}>
                 <Settings />
-                <span>Settings</span>
+                <span>{t('Navigation.settings')}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             <SidebarMenuItem>
@@ -76,7 +82,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                   <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
                   <AvatarFallback>CN</AvatarFallback>
                 </Avatar>
-                <span>User Profile</span>
+                <span>{t('Navigation.userProfile')}</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
           </SidebarMenu>
@@ -87,9 +93,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
             <SidebarTrigger className="md:hidden"/>
             <div className="flex-1">
                 <h1 className="text-lg font-semibold">
-                    {menuItems.find(item => item.href === pathname)?.label || 'Dashboard'}
+                    {pageTitle}
                 </h1>
             </div>
+            <LanguageSwitcher />
         </header>
         {children}
       </SidebarInset>
