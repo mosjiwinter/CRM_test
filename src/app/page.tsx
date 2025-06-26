@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -19,12 +19,12 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { GripVertical } from 'lucide-react';
+import { subDays, startOfDay, format, eachDayOfInterval } from 'date-fns';
 
-import { DollarSign, Wallet, ArrowUpRight, ArrowDownLeft } from 'lucide-react';
+import { DollarSign, Wallet, ArrowUpRight, ArrowDownLeft, Users } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/stats-card';
 import { OverviewChart } from '@/components/dashboard/overview-chart';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
-import { AIInsights } from '@/components/dashboard/ai-insights';
 import { useAppContext } from '@/lib/app-context';
 import { ExpenseBreakdownChart } from '@/components/dashboard/expense-breakdown-chart';
 import { RevenueBreakdownChart } from '@/components/dashboard/revenue-breakdown-chart';
@@ -59,7 +59,7 @@ function SortableItem({ id, children }: { id: string; children: React.ReactNode 
 
 
 export default function DashboardPage() {
-  const { transactions } = useAppContext();
+  const { transactions, customers } = useAppContext();
 
   const totalRevenue = transactions
     .filter((t) => t.type === 'revenue')
@@ -78,6 +78,31 @@ export default function DashboardPage() {
     }).format(amount);
   };
   
+  const customerTrendData = useMemo(() => {
+    const ninetyDaysAgo = subDays(startOfDay(new Date()), 89);
+    const dateRange = eachDayOfInterval({ start: ninetyDaysAgo, end: new Date() });
+
+    const dailyCounts: Record<string, number> = {};
+    dateRange.forEach(date => {
+      dailyCounts[format(date, 'yyyy-MM-dd')] = 0;
+    });
+
+    customers.forEach(customer => {
+      const joinDate = startOfDay(customer.createdAt);
+      if (joinDate >= ninetyDaysAgo) {
+        const dateStr = format(joinDate, 'yyyy-MM-dd');
+        if (dailyCounts[dateStr] !== undefined) {
+            dailyCounts[dateStr]++;
+        }
+      }
+    });
+
+    return Object.entries(dailyCounts).map(([date, count]) => ({
+      date,
+      count,
+    })).sort((a, b) => a.date.localeCompare(b.date));
+  }, [customers]);
+
   const chartComponents = {
     overview: <OverviewChart data={transactions} />,
     recent: <RecentTransactions transactions={transactions} />,
@@ -126,7 +151,14 @@ export default function DashboardPage() {
           icon={profit >= 0 ? ArrowUpRight : ArrowDownLeft}
           description="+19% from last month"
         />
-        <AIInsights transactions={transactions} />
+        <StatsCard
+          title="Total Customers"
+          value={customers.length.toString()}
+          icon={Users}
+          description={`+${customerTrendData.reduce((sum, day) => sum + day.count, 0)} in last 90 days`}
+          chartData={customerTrendData}
+          chartKey="count"
+        />
       </div>
 
       <DndContext
