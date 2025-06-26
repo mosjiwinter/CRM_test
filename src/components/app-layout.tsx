@@ -21,6 +21,7 @@ import {
   TrendingDown,
   Calendar,
   Settings,
+  Users,
 } from 'lucide-react';
 
 const menuItems = [
@@ -28,6 +29,7 @@ const menuItems = [
   { href: '/revenue', label: 'Revenue', icon: TrendingUp },
   { href: '/expenses', label: 'Expenses', icon: TrendingDown },
   { href: '/calendar', label: 'Calendar', icon: Calendar },
+  { href: '/customers', label: 'Customers', icon: Users },
 ];
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
