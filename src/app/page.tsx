@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -60,6 +60,11 @@ function SortableItem({ id, children }: { id: string; children: React.ReactNode 
 
 export default function DashboardPage() {
   const { transactions, customers } = useAppContext();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const totalRevenue = transactions
     .filter((t) => t.type === 'revenue')
@@ -161,21 +166,31 @@ export default function DashboardPage() {
         />
       </div>
 
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
-        <SortableContext items={chartOrder} strategy={rectSortingStrategy}>
-          <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
-            {chartOrder.map((id) => (
-              <SortableItem key={id} id={id}>
+      {isMounted ? (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={chartOrder} strategy={rectSortingStrategy}>
+            <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
+              {chartOrder.map((id) => (
+                <SortableItem key={id} id={id}>
+                  {chartComponents[id as keyof typeof chartComponents]}
+                </SortableItem>
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      ) : (
+        <div className="grid gap-4 md:gap-8 lg:grid-cols-2">
+          {chartOrder.map((id) => (
+            <div key={id}>
                 {chartComponents[id as keyof typeof chartComponents]}
-              </SortableItem>
-            ))}
-          </div>
-        </SortableContext>
-      </DndContext>
+            </div>
+          ))}
+        </div>
+      )}
     </main>
   );
 }
