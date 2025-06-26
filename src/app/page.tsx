@@ -6,6 +6,7 @@ import { OverviewChart } from '@/components/dashboard/overview-chart';
 import { RecentTransactions } from '@/components/dashboard/recent-transactions';
 import { AIInsights } from '@/components/dashboard/ai-insights';
 import { useAppContext } from '@/lib/app-context';
+import { ExpenseBreakdownChart } from '@/components/dashboard/expense-breakdown-chart';
 
 export default function DashboardPage() {
   const { transactions } = useAppContext();
@@ -54,7 +55,10 @@ export default function DashboardPage() {
         <div className="xl:col-span-2">
             <OverviewChart data={transactions} />
         </div>
-        <RecentTransactions transactions={transactions} />
+        <div className="grid gap-4 md:gap-8">
+            <ExpenseBreakdownChart transactions={transactions} />
+            <RecentTransactions transactions={transactions} />
+        </div>
       </div>
     </main>
   );
