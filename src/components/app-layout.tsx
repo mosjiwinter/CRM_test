@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { useTranslation } from '@/lib/i18n';
 import { LanguageSwitcher } from './language-switcher';
+import { ThemeSwitcher } from './theme-switcher';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -141,14 +142,17 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex h-14 items-center gap-4 border-b bg-card px-4 lg:h-[60px] lg:px-6">
+        <header className="flex h-14 items-center gap-4 border-b bg-background px-4 lg:h-[60px] lg:px-6">
             <SidebarTrigger />
             <div className="flex-1">
                 <h1 className="text-lg font-semibold">
                     {pageTitle}
                 </h1>
             </div>
-            <LanguageSwitcher />
+            <div className="flex items-center gap-2">
+              <LanguageSwitcher />
+              <ThemeSwitcher />
+            </div>
         </header>
         {children}
       </SidebarInset>
