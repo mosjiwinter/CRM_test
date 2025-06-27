@@ -44,7 +44,7 @@ const formSchema = z.object({
 type AppointmentDialogProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  addOrUpdateAppointment: (appointment: Omit<Appointment, 'id'>) => void;
+  addOrUpdateAppointment: (appointment: Partial<Omit<Appointment, 'id'>>) => Promise<void>;
   appointmentToEdit?: Appointment;
   selectedDate?: Date;
 };
@@ -86,13 +86,14 @@ export function AppointmentDialog({
     }
   }, [appointmentToEdit, isOpen, form, selectedDate]);
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const [hours, minutes] = values.time.split(':');
     const combinedDate = new Date(values.date);
     combinedDate.setHours(parseInt(hours, 10));
     combinedDate.setMinutes(parseInt(minutes, 10));
 
-    addOrUpdateAppointment({
+    await addOrUpdateAppointment({
+      id: appointmentToEdit?.id,
       title: values.title,
       description: values.description || '',
       date: combinedDate,
@@ -193,7 +194,9 @@ export function AppointmentDialog({
               />
             </div>
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Saving...' : 'Save changes'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

@@ -30,8 +30,8 @@ export default function RevenuePage() {
     setIsDialogOpen(true);
   };
   
-  const handleDialogSave = (transactionData: Omit<Transaction, 'type'>) => {
-    addOrUpdateTransaction(transactionData, 'revenue');
+  const handleDialogSave = async (transactionData: Omit<Transaction, 'type'>) => {
+    await addOrUpdateTransaction(transactionData, 'revenue');
   };
 
   const handleAICreate = () => {

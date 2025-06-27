@@ -30,8 +30,8 @@ export default function ExpensesPage() {
     setIsDialogOpen(true);
   };
   
-  const handleDialogSave = (transactionData: Omit<Transaction, 'type'>) => {
-    addOrUpdateTransaction(transactionData, 'expense');
+  const handleDialogSave = async (transactionData: Omit<Transaction, 'type'>) => {
+    await addOrUpdateTransaction(transactionData, 'expense');
   };
   
   const handleAICreate = () => {

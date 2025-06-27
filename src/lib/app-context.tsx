@@ -1,108 +1,128 @@
 'use client';
 
 import type { ReactNode } from 'react';
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import type { Transaction, Appointment, Customer, Project } from '@/lib/types';
-import { initialTransactions, initialAppointments, initialCustomers, initialProjects } from '@/lib/data';
+import { db } from '@/lib/firebase';
+import {
+  collection,
+  onSnapshot,
+  addDoc,
+  updateDoc,
+  deleteDoc,
+  doc,
+  Timestamp,
+} from 'firebase/firestore';
 
 type AppContextType = {
   transactions: Transaction[];
   appointments: Appointment[];
   customers: Customer[];
   projects: Project[];
-  addOrUpdateTransaction: (transactionData: Partial<Omit<Transaction, 'type'>>, type: 'revenue' | 'expense') => void;
-  deleteTransaction: (id: string) => void;
-  addOrUpdateAppointment: (appointmentData: Partial<Appointment>) => void;
-  deleteAppointment: (id: string) => void;
-  addOrUpdateCustomer: (customerData: Partial<Customer>) => void;
-  deleteCustomer: (id: string) => void;
-  addOrUpdateProject: (projectData: Partial<Project>) => void;
-  deleteProject: (id: string) => void;
+  loading: boolean;
+  addOrUpdateTransaction: (transactionData: Partial<Omit<Transaction, 'type'>>, type: 'revenue' | 'expense') => Promise<void>;
+  deleteTransaction: (id: string) => Promise<void>;
+  addOrUpdateAppointment: (appointmentData: Partial<Appointment>) => Promise<void>;
+  deleteAppointment: (id: string) => Promise<void>;
+  addOrUpdateCustomer: (customerData: Partial<Customer>) => Promise<void>;
+  deleteCustomer: (id: string) => Promise<void>;
+  addOrUpdateProject: (projectData: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
 };
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [transactions, setTransactions] = useState<Transaction[]>(initialTransactions);
-  const [appointments, setAppointments] = useState<Appointment[]>(initialAppointments);
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const addOrUpdateTransaction = (transactionData: Partial<Omit<Transaction, 'type'>>, type: 'revenue' | 'expense') => {
-    setTransactions(current => {
-      const id = transactionData.id || new Date().toISOString();
-      const newTransaction = { ...transactionData, id, type } as Transaction;
-      const existingIndex = current.findIndex(t => t.id === id);
+  useEffect(() => {
+    const unsubscribers = [
+      onSnapshot(collection(db, 'transactions'), (snapshot) => {
+        setTransactions(snapshot.docs.map(doc => {
+            const data = doc.data();
+            return { ...data, id: doc.id, date: (data.date as Timestamp).toDate() } as Transaction;
+        }));
+        setLoading(false);
+      }),
+      onSnapshot(collection(db, 'appointments'), (snapshot) => {
+        setAppointments(snapshot.docs.map(doc => {
+            const data = doc.data();
+            return { ...data, id: doc.id, date: (data.date as Timestamp).toDate() } as Appointment;
+        }));
+      }),
+      onSnapshot(collection(db, 'customers'), (snapshot) => {
+        setCustomers(snapshot.docs.map(doc => {
+            const data = doc.data();
+            return { ...data, id: doc.id, createdAt: (data.createdAt as Timestamp).toDate() } as Customer;
+        }));
+      }),
+      onSnapshot(collection(db, 'projects'), (snapshot) => {
+        setProjects(snapshot.docs.map(doc => {
+            const data = doc.data();
+            return { ...data, id: doc.id, deadline: (data.deadline as Timestamp).toDate() } as Project;
+        }));
+      }),
+    ];
 
-      if (existingIndex !== -1) {
-         const updated = [...current];
-         updated[existingIndex] = { ...current[existingIndex], ...newTransaction };
-         return updated;
-      }
-      return [...current, newTransaction];
-    });
+    return () => unsubscribers.forEach(unsub => unsub());
+  }, []);
+
+  const addOrUpdateTransaction = async (transactionData: Partial<Omit<Transaction, 'type'>>, type: 'revenue' | 'expense') => {
+    const { id, ...dataToSave } = transactionData;
+    const finalData = { ...dataToSave, type };
+
+    if (id) {
+        await updateDoc(doc(db, 'transactions', id), finalData);
+    } else {
+        await addDoc(collection(db, 'transactions'), finalData);
+    }
   };
   
-  const deleteTransaction = (id: string) => {
-    setTransactions(current => current.filter(t => t.id !== id));
+  const deleteTransaction = async (id: string) => {
+    await deleteDoc(doc(db, 'transactions', id));
   };
   
-  const addOrUpdateAppointment = (appointmentData: Partial<Appointment>) => {
-    setAppointments(current => {
-      const id = appointmentData.id || new Date().toISOString();
-      const newAppointment = { ...appointmentData, id } as Appointment;
-      const existingIndex = current.findIndex(a => a.id === id);
-
-      if (existingIndex !== -1) {
-         const updated = [...current];
-         updated[existingIndex] = { ...current[existingIndex], ...newAppointment };
-         return updated;
-      }
-      return [...current, newAppointment];
-    });
+  const addOrUpdateAppointment = async (appointmentData: Partial<Appointment>) => {
+    const { id, ...dataToSave } = appointmentData;
+     if (id) {
+        await updateDoc(doc(db, 'appointments', id), dataToSave);
+    } else {
+        await addDoc(collection(db, 'appointments'), dataToSave);
+    }
   };
   
-  const deleteAppointment = (id: string) => {
-    setAppointments(current => current.filter(a => a.id !== id));
+  const deleteAppointment = async (id: string) => {
+    await deleteDoc(doc(db, 'appointments', id));
   };
 
-  const addOrUpdateCustomer = (customerData: Partial<Customer>) => {
-    setCustomers(current => {
-      const id = customerData.id || new Date().toISOString();
-      const createdAt = customerData.createdAt || new Date();
-      const newCustomer = { ...customerData, id, createdAt } as Customer;
-      const existingIndex = current.findIndex(c => c.id === id);
-
-      if (existingIndex !== -1) {
-        const updated = [...current];
-        updated[existingIndex] = { ...current[existingIndex], ...newCustomer };
-        return updated;
-      }
-      return [...current, newCustomer];
-    });
+  const addOrUpdateCustomer = async (customerData: Partial<Customer>) => {
+    const { id, ...dataToSave } = customerData;
+    if (id) {
+      await updateDoc(doc(db, 'customers', id), dataToSave);
+    } else {
+      await addDoc(collection(db, 'customers'), { ...dataToSave, createdAt: new Date() });
+    }
   };
   
-  const deleteCustomer = (id: string) => {
-    setCustomers(current => current.filter(c => c.id !== id));
+  const deleteCustomer = async (id: string) => {
+    await deleteDoc(doc(db, 'customers', id));
   };
 
-  const addOrUpdateProject = (projectData: Partial<Project>) => {
-    setProjects(current => {
-      const id = projectData.id || new Date().toISOString();
-      const newProject = { ...projectData, id } as Project;
-      const existingIndex = current.findIndex(p => p.id === id);
-
-      if (existingIndex !== -1) {
-        const updated = [...current];
-        updated[existingIndex] = { ...current[existingIndex], ...newProject };
-        return updated;
-      }
-      return [...current, newProject];
-    });
+  const addOrUpdateProject = async (projectData: Partial<Project>) => {
+     const { id, ...dataToSave } = projectData;
+    if (id) {
+      await updateDoc(doc(db, 'projects', id), dataToSave);
+    } else {
+      await addDoc(collection(db, 'projects'), dataToSave);
+    }
   };
 
-  const deleteProject = (id: string) => {
-    setProjects(current => current.filter(p => p.id !== id));
+  const deleteProject = async (id: string) => {
+    await deleteDoc(doc(db, 'projects', id));
   };
 
   const value = {
@@ -110,6 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     appointments,
     customers,
     projects,
+    loading,
     addOrUpdateTransaction,
     deleteTransaction,
     addOrUpdateAppointment,

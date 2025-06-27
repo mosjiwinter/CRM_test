@@ -44,7 +44,7 @@ type TransactionDialogProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   type: 'revenue' | 'expense';
-  addOrUpdateTransaction: (transaction: Omit<Transaction, 'type'>) => void;
+  addOrUpdateTransaction: (transaction: Omit<Transaction, 'type'>) => Promise<void>;
   transactionToEdit?: Transaction;
 };
 
@@ -73,18 +73,22 @@ export function TransactionDialog({
         amount: transactionToEdit.amount,
         date: new Date(transactionToEdit.date),
       });
-    } else if (!isOpen) {
-        form.reset();
+    } else if (isOpen) {
+        form.reset({
+          description: '',
+          category: '',
+          amount: 0,
+          date: new Date(),
+        });
     }
   }, [transactionToEdit, isOpen, form]);
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    addOrUpdateTransaction({
-      id: transactionToEdit?.id || new Date().toISOString(),
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    await addOrUpdateTransaction({
+      id: transactionToEdit?.id,
       ...values,
     });
     setIsOpen(false);
-    form.reset();
   };
   
   const title = `${transactionToEdit ? 'Edit' : 'Add'} ${type === 'revenue' ? 'Revenue' : 'Expense'}`;
@@ -181,7 +185,9 @@ export function TransactionDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Saving...' : 'Save changes'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>

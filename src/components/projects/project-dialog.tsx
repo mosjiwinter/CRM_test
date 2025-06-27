@@ -40,7 +40,7 @@ const formSchema = z.object({
 type ProjectDialogProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  addOrUpdateProject: (project: Omit<Project, 'id' | 'createdAt'>) => void;
+  addOrUpdateProject: (project: Partial<Omit<Project, 'id' | 'createdAt'>>) => Promise<void>;
   projectToEdit?: Project;
   customers: Customer[];
 };
@@ -82,9 +82,9 @@ export function ProjectDialog({
     }
   }, [projectToEdit, isOpen, form]);
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    addOrUpdateProject({
-      id: projectToEdit?.id || new Date().toISOString(),
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    await addOrUpdateProject({
+      id: projectToEdit?.id,
       ...values,
     });
     setIsOpen(false);
@@ -199,7 +199,9 @@ export function ProjectDialog({
                 )}
               />
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Saving...' : 'Save changes'}
+                </Button>
             </DialogFooter>
           </form>
         </Form>

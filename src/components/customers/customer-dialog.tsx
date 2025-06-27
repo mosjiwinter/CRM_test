@@ -34,7 +34,7 @@ const formSchema = z.object({
 type CustomerDialogProps = {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  addOrUpdateCustomer: (customer: Omit<Customer, 'createdAt'>) => void;
+  addOrUpdateCustomer: (customer: Partial<Omit<Customer, 'createdAt'>>) => Promise<void>;
   customerToEdit?: Customer;
 };
 
@@ -55,25 +55,31 @@ export function CustomerDialog({
   });
 
   useEffect(() => {
-    if (customerToEdit && isOpen) {
-      form.reset({
-        name: customerToEdit.name,
-        email: customerToEdit.email,
-        phone: customerToEdit.phone,
-        company: customerToEdit.company,
-      });
-    } else if (!isOpen) {
-        form.reset();
+    if (isOpen) {
+      if (customerToEdit) {
+        form.reset({
+          name: customerToEdit.name,
+          email: customerToEdit.email,
+          phone: customerToEdit.phone,
+          company: customerToEdit.company,
+        });
+      } else {
+        form.reset({
+          name: '',
+          email: '',
+          phone: '',
+          company: '',
+        });
+      }
     }
   }, [customerToEdit, isOpen, form]);
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    addOrUpdateCustomer({
-      id: customerToEdit?.id || new Date().toISOString(),
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    await addOrUpdateCustomer({
+      id: customerToEdit?.id,
       ...values,
     });
     setIsOpen(false);
-    form.reset();
   };
   
   const title = `${customerToEdit ? 'Edit' : 'Add'} Customer`;
@@ -142,7 +148,9 @@ export function CustomerDialog({
               )}
             />
             <DialogFooter>
-              <Button type="submit">Save changes</Button>
+              <Button type="submit" disabled={form.formState.isSubmitting}>
+                {form.formState.isSubmitting ? 'Saving...' : 'Save changes'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
