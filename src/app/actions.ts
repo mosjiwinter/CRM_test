@@ -4,6 +4,7 @@ import { generateInsight } from '@/ai/flows/generate-insight';
 import { createTransactionFromText } from '@/ai/flows/create-transaction-flow';
 import { createTransactionFromImage } from '@/ai/flows/create-transaction-from-image-flow';
 import { chat } from '@/ai/flows/chat-flow';
+import { textToSpeech } from '@/ai/flows/tts-flow';
 import type { Transaction } from '@/lib/types';
 import { db } from '@/lib/firebase';
 import { collection, writeBatch, doc, addDoc } from 'firebase/firestore';
@@ -65,6 +66,16 @@ export async function getAiChatResponse(history: { role: 'user' | 'model'; conte
     } catch (error) {
         console.error('Error in chat flow:', error);
         return { success: false, error: 'AI assistant is having trouble. Please try again later.' };
+    }
+}
+
+export async function getTtsAction(text: string) {
+    try {
+        const result = await textToSpeech(text);
+        return { success: true, data: result.media };
+    } catch (error) {
+        console.error('Error in TTS flow:', error);
+        return { success: false, error: 'AI assistant is having trouble generating audio. Please try again later.' };
     }
 }
 
