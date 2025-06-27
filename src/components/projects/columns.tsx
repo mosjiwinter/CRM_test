@@ -10,7 +10,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import type { Project, Customer, Transaction } from '@/lib/types';
+import type { Project, Customer } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -27,12 +27,20 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 }
 
+// Define the type for the data that the table will receive
+// It includes the original Project type plus our calculated fields
+export type ProjectWithFinancials = Project & {
+    profit: number;
+    totalExpenses: number;
+    spendPercentage: number;
+};
+
+
 export const getColumns = (
     openDialog: (project?: Project) => void, 
     deleteProject: (id: string) => void,
     customers: Customer[],
-    transactions: Transaction[],
-): ColumnDef<Project>[] => [
+): ColumnDef<ProjectWithFinancials>[] => [
   {
     accessorKey: 'name',
     header: ({ column }) => (
@@ -82,13 +90,9 @@ export const getColumns = (
   {
     id: 'profitability',
     header: 'Profitability',
+    accessorKey: 'profit', // Use the pre-calculated accessor
     cell: ({ row }) => {
-        const project = row.original;
-        const relevantTransactions = transactions.filter(t => t.projectId === project.id);
-        const totalRevenue = relevantTransactions.filter(t => t.type === 'revenue').reduce((sum, t) => sum + t.amount, 0);
-        const totalExpenses = relevantTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-        const profit = totalRevenue - totalExpenses;
-
+        const profit = row.original.profit;
         return (
             <div className={`font-medium ${profit >= 0 ? 'text-positive' : 'text-negative'}`}>
                 {formatCurrency(profit)}
@@ -104,9 +108,7 @@ export const getColumns = (
         if (!project.budget) {
             return <span className="text-muted-foreground text-center">-</span>;
         }
-        const relevantTransactions = transactions.filter(t => t.projectId === project.id);
-        const totalExpenses = relevantTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
-        const spendPercentage = project.budget > 0 ? Math.min((totalExpenses / project.budget) * 100, 100) : 0;
+        const { totalExpenses, spendPercentage } = project;
         
         return (
             <div className="flex flex-col gap-1">

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { PlusCircle } from 'lucide-react';
 import { getColumns } from '@/components/projects/columns';
@@ -20,7 +20,24 @@ export default function ProjectsPage() {
     setIsDialogOpen(true);
   };
 
-  const columns = getColumns(openDialog, deleteProject, customers, transactions);
+  const projectsWithFinancials = useMemo(() => {
+    return projects.map(project => {
+      const relevantTransactions = transactions.filter(t => t.projectId === project.id);
+      const totalRevenue = relevantTransactions.filter(t => t.type === 'revenue').reduce((sum, t) => sum + t.amount, 0);
+      const totalExpenses = relevantTransactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      const profit = totalRevenue - totalExpenses;
+      const spendPercentage = project.budget && project.budget > 0 ? Math.min((totalExpenses / project.budget) * 100, 100) : 0;
+      
+      return {
+        ...project,
+        profit,
+        totalExpenses,
+        spendPercentage,
+      };
+    });
+  }, [projects, transactions]);
+
+  const columns = getColumns(openDialog, deleteProject, customers);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
@@ -32,7 +49,7 @@ export default function ProjectsPage() {
       </div>
       <Card>
         <CardContent className="pt-6">
-          <DataTable columns={columns} data={projects} filterKey="name" filterPlaceholder="Filter by name..." />
+          <DataTable columns={columns} data={projectsWithFinancials} filterKey="name" filterPlaceholder="Filter by name..." />
         </CardContent>
       </Card>
       <ProjectDialog
