@@ -1,11 +1,38 @@
+'use client';
+
+import { useTransition } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { seedDatabase } from '@/app/actions';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+
 
 export default function SettingsPage() {
+  const [isPending, startTransition] = useTransition();
+  const { toast } = useToast();
+
+  const handleSeedData = () => {
+    startTransition(async () => {
+      const result = await seedDatabase();
+      if (result.success) {
+        toast({
+          title: "Success!",
+          description: result.message,
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error,
+        });
+      }
+    });
+  };
+
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
       <div className="grid gap-6">
@@ -62,6 +89,26 @@ export default function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Developer</CardTitle>
+            <CardDescription>Actions for development and testing purposes.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             <div>
+                <h3 className="font-medium">Seed Database</h3>
+                <p className="text-sm text-muted-foreground pt-1">
+                    Populate your database with sample data. This includes transactions, customers, projects, and appointments.
+                </p>
+             </div>
+             <Button onClick={handleSeedData} disabled={isPending} variant="secondary">
+                {isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                {isPending ? 'Seeding Data...' : 'Add Sample Data'}
+            </Button>
+          </CardContent>
+        </Card>
+
       </div>
     </main>
   );
