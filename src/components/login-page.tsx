@@ -38,6 +38,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    // This check is important for keyboard submission (pressing Enter)
     if (!isWrongPassword) {
       onLoginSuccess();
     }
@@ -72,14 +73,17 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
             </div>
           </CardContent>
           <CardFooter>
-            {/* This container needs enough space for the button to move around */}
-            <div className="flex h-24 w-full items-center justify-center">
+            {/* The container listens for the hover to move the button */}
+            <div 
+              className="flex h-24 w-full items-center justify-center"
+              onMouseEnter={handleButtonHover}
+            >
                  <Button
                     type="submit"
-                    onMouseEnter={handleButtonHover}
                     style={{ 
                         transform: `translate(${transform.x}px, ${transform.y}px)`,
                         transition: 'transform 0.3s ease-in-out',
+                        pointerEvents: isWrongPassword ? 'none' : 'auto',
                     }}
                 >
                     Login
