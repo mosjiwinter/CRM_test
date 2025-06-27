@@ -20,6 +20,9 @@ type AppContextType = {
   customers: Customer[];
   projects: Project[];
   loading: boolean;
+  isAuthenticated: boolean;
+  login: () => void;
+  logout: () => void;
   addOrUpdateTransaction: (transactionData: Partial<Omit<Transaction, 'type'>>, type: 'revenue' | 'expense') => Promise<void>;
   deleteTransaction: (id: string) => Promise<void>;
   addOrUpdateAppointment: (appointmentData: Partial<Appointment>) => Promise<void>;
@@ -38,6 +41,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  const login = () => setIsAuthenticated(true);
+  const logout = () => setIsAuthenticated(false);
 
   useEffect(() => {
     const unsubscribers = [
@@ -131,6 +138,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     customers,
     projects,
     loading,
+    isAuthenticated,
+    login,
+    logout,
     addOrUpdateTransaction,
     deleteTransaction,
     addOrUpdateAppointment,

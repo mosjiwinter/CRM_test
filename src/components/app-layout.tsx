@@ -38,10 +38,13 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { AiChatButton } from '@/components/dashboard/ai-chat-button';
+import { useAppContext } from '@/lib/app-context';
+import { LoginPage } from './login-page';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { t } = useTranslation();
+  const { isAuthenticated, login, logout } = useAppContext();
 
   const menuItems = [
     { href: '/', label: t('Navigation.dashboard'), icon: LayoutDashboard },
@@ -59,6 +62,10 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   const allPages = [...menuItems, ...footerMenuItems];
   const pageTitle = allPages.find((item) => item.href === pathname)?.label || t('Navigation.dashboard');
+
+  if (!isAuthenticated) {
+    return <LoginPage onLoginSuccess={login} />;
+  }
 
   return (
     <SidebarProvider>
@@ -125,7 +132,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
                     </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem disabled>
+                <DropdownMenuItem onClick={logout}>
                     <LogOut className="mr-2" />
                     <span>Log out</span>
                 </DropdownMenuItem>
