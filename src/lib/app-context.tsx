@@ -44,16 +44,29 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const login = () => setIsAuthenticated(true);
-  const logout = () => setIsAuthenticated(false);
+  const logout = () => {
+    setIsAuthenticated(false);
+    // Clear data on logout to avoid showing stale data
+    setTransactions([]);
+    setAppointments([]);
+    setCustomers([]);
+    setProjects([]);
+  };
 
   useEffect(() => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return; // Do not set up listeners if not authenticated
+    }
+
+    setLoading(true);
     const unsubscribers = [
       onSnapshot(collection(db, 'transactions'), (snapshot) => {
         setTransactions(snapshot.docs.map(doc => {
             const data = doc.data();
             return { ...data, id: doc.id, date: (data.date as Timestamp).toDate() } as Transaction;
         }));
-        setLoading(false);
+        setLoading(false); // Set loading to false after the primary collection is loaded
       }),
       onSnapshot(collection(db, 'appointments'), (snapshot) => {
         setAppointments(snapshot.docs.map(doc => {
@@ -75,8 +88,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       }),
     ];
 
+    // Cleanup function: this will be called when the component unmounts
+    // or when isAuthenticated changes to false.
     return () => unsubscribers.forEach(unsub => unsub());
-  }, []);
+  }, [isAuthenticated]); // Re-run effect when isAuthenticated changes
 
   const addOrUpdateTransaction = async (transactionData: Partial<Omit<Transaction, 'type'>>, type: 'revenue' | 'expense') => {
     const { id, ...dataToSave } = transactionData;
