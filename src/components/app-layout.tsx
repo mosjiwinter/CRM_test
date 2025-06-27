@@ -69,7 +69,7 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <SidebarProvider>
-      <Sidebar collapsible="icon" variant="inset">
+      <Sidebar collapsible="icon" variant="floating">
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <Logo className="size-8 text-primary" />
