@@ -38,7 +38,7 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // This check is important for keyboard submission (pressing Enter)
+    // This check is important for keyboard submission (pressing Enter) and clicks
     if (!isWrongPassword) {
       onLoginSuccess();
     }
@@ -73,17 +73,16 @@ export function LoginPage({ onLoginSuccess }: { onLoginSuccess: () => void }) {
             </div>
           </CardContent>
           <CardFooter>
-            {/* The container listens for the hover to move the button */}
+            {/* The button moves itself on hover if the password is wrong */}
             <div 
               className="flex h-24 w-full items-center justify-center"
-              onMouseEnter={handleButtonHover}
             >
                  <Button
                     type="submit"
+                    onMouseEnter={handleButtonHover}
                     style={{ 
                         transform: `translate(${transform.x}px, ${transform.y}px)`,
                         transition: 'transform 0.3s ease-in-out',
-                        pointerEvents: isWrongPassword ? 'none' : 'auto',
                     }}
                 >
                     Login
