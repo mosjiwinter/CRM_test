@@ -44,11 +44,11 @@ export function RecentTransactions({ transactions }: RecentTransactionsProps) {
                   <div className="text-sm text-muted-foreground">{transaction.date.toLocaleDateString()}</div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant={transaction.type === 'revenue' ? 'default' : 'secondary'} className={transaction.type === 'revenue' ? '' : 'bg-orange-200 text-orange-800'}>
+                  <Badge variant={transaction.type === 'revenue' ? 'default' : 'secondary'}>
                     {transaction.type}
                   </Badge>
                 </TableCell>
-                <TableCell className={`text-right font-medium ${transaction.type === 'revenue' ? 'text-green-600' : 'text-red-600'}`}>
+                <TableCell className={`text-right font-medium ${transaction.type === 'revenue' ? 'text-positive' : 'text-negative'}`}>
                   {transaction.type === 'revenue' ? '+' : '-'}
                   {transaction.amount.toLocaleString('en-US', {
                     style: 'currency',

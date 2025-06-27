@@ -65,7 +65,7 @@ export const getColumns = (
       }).format(amount);
       const isRevenue = row.original.type === 'revenue';
       
-      return <div className={`text-right font-medium ${isRevenue ? 'text-green-600' : 'text-red-600'}`}>{formatted}</div>;
+      return <div className={`text-right font-medium ${isRevenue ? 'text-positive' : 'text-negative'}`}>{formatted}</div>;
     },
   },
   {

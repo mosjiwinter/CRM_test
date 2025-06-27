@@ -50,7 +50,7 @@ export const getColumns = (
     header: 'Status',
     cell: ({ row }) => {
         const status = row.getValue('status') as Project['status'];
-        return <Badge variant={statusVariantMap[status]} className={status === 'In Progress' ? 'bg-amber-200 text-amber-800' : ''}>{status}</Badge>;
+        return <Badge variant={statusVariantMap[status]}>{status}</Badge>;
     }
   },
   {
