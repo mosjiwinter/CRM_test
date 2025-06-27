@@ -11,7 +11,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useAppContext } from '@/lib/app-context';
 
 export default function ProjectsPage() {
-  const { projects, customers, addOrUpdateProject, deleteProject } = useAppContext();
+  const { projects, customers, transactions, addOrUpdateProject, deleteProject } = useAppContext();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [projectToEdit, setProjectToEdit] = useState<Project | undefined>(undefined);
 
@@ -20,7 +20,7 @@ export default function ProjectsPage() {
     setIsDialogOpen(true);
   };
 
-  const columns = getColumns(openDialog, deleteProject, customers);
+  const columns = getColumns(openDialog, deleteProject, customers, transactions);
 
   return (
     <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">

@@ -5,6 +5,7 @@ export type Transaction = {
   amount: number;
   description: string;
   category: string;
+  projectId?: string;
 };
 
 export type Appointment = {
@@ -29,4 +30,5 @@ export type Project = {
   customerId: string;
   status: 'Not Started' | 'In Progress' | 'Completed';
   deadline: Date;
+  budget?: number;
 };

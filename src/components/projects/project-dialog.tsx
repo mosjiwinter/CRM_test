@@ -35,6 +35,7 @@ const formSchema = z.object({
   customerId: z.string().min(1, 'Please select a customer.'),
   status: z.enum(['Not Started', 'In Progress', 'Completed']),
   deadline: z.date(),
+  budget: z.coerce.number().positive('Budget must be a positive number.').optional(),
 });
 
 type ProjectDialogProps = {
@@ -59,6 +60,7 @@ export function ProjectDialog({
       customerId: '',
       status: 'Not Started',
       deadline: new Date(),
+      budget: undefined,
     },
   });
 
@@ -70,6 +72,7 @@ export function ProjectDialog({
           customerId: projectToEdit.customerId,
           status: projectToEdit.status,
           deadline: new Date(projectToEdit.deadline),
+          budget: projectToEdit.budget,
         });
       } else {
           form.reset({
@@ -77,6 +80,7 @@ export function ProjectDialog({
             customerId: '',
             status: 'Not Started',
             deadline: new Date(),
+            budget: undefined,
           });
       }
     }
@@ -138,66 +142,81 @@ export function ProjectDialog({
                 </FormItem>
               )}
             />
-             <FormField
+            <FormField
               control={form.control}
-              name="status"
+              name="budget"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
-                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a status" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="Not Started">Not Started</SelectItem>
-                      <SelectItem value="In Progress">In Progress</SelectItem>
-                      <SelectItem value="Completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Budget</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="e.g., 5000" {...field} onChange={event => field.onChange(+event.target.value)} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-             <FormField
-                control={form.control}
-                name="deadline"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Deadline</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
+            <div className="grid grid-cols-2 gap-4">
+                 <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Status</FormLabel>
+                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
-                          <Button
-                            variant={'outline'}
-                            className={cn(
-                              'w-full pl-3 text-left font-normal',
-                              !field.value && 'text-muted-foreground'
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, 'PPP')
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a status" />
+                          </SelectTrigger>
                         </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                        <SelectContent>
+                          <SelectItem value="Not Started">Not Started</SelectItem>
+                          <SelectItem value="In Progress">In Progress</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                    control={form.control}
+                    name="deadline"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Deadline</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={'outline'}
+                                className={cn(
+                                  'pl-3 text-left font-normal',
+                                  !field.value && 'text-muted-foreground'
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, 'PPP')
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value}
+                              onSelect={field.onChange}
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+            </div>
             <DialogFooter>
               <Button type="submit" disabled={form.formState.isSubmitting}>
                 {form.formState.isSubmitting ? 'Saving...' : 'Save changes'}

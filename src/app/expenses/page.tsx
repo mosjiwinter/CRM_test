@@ -14,7 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAppContext } from '@/lib/app-context';
 
 export default function ExpensesPage() {
-  const { transactions, addOrUpdateTransaction, deleteTransaction } = useAppContext();
+  const { transactions, projects, addOrUpdateTransaction, deleteTransaction } = useAppContext();
   const expenseTransactions = transactions.filter((t) => t.type === 'expense');
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -158,6 +158,7 @@ export default function ExpensesPage() {
         type="expense"
         addOrUpdateTransaction={handleDialogSave}
         transactionToEdit={transactionToEdit}
+        projects={projects}
       />
     </main>
   );

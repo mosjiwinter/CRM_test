@@ -11,10 +11,10 @@ export const sampleCustomers: Omit<Customer, 'id' | 'createdAt'>[] = [
 
 // Customer IDs are assigned dynamically in the seeding function
 export const sampleProjects: Omit<Project, 'id' | 'customerId'>[] = [
-  { name: 'Website Redesign', status: 'In Progress', deadline: addDays(new Date(), 30) },
-  { name: 'Mobile App Development', status: 'Completed', deadline: subDays(new Date(), 15) },
-  { name: 'Marketing Campaign', status: 'Not Started', deadline: addDays(new Date(), 60) },
-  { name: 'API Integration', status: 'In Progress', deadline: addDays(new Date(), 10) },
+  { name: 'Website Redesign', status: 'In Progress', deadline: addDays(new Date(), 30), budget: 5000 },
+  { name: 'Mobile App Development', status: 'Completed', deadline: subDays(new Date(), 15), budget: 8000 },
+  { name: 'Marketing Campaign', status: 'Not Started', deadline: addDays(new Date(), 60), budget: 3500 },
+  { name: 'API Integration', status: 'In Progress', deadline: addDays(new Date(), 10), budget: 2500 },
 ];
 
 export const sampleTransactions: Omit<Transaction, 'id'>[] = [

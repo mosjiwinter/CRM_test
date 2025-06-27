@@ -26,11 +26,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { CalendarIcon } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
-import type { Transaction } from '@/lib/types';
+import type { Transaction, Project } from '@/lib/types';
 import { useEffect } from 'react';
 
 const formSchema = z.object({
@@ -38,6 +45,7 @@ const formSchema = z.object({
   category: z.string().min(2, 'Category must be at least 2 characters.'),
   amount: z.coerce.number().positive('Amount must be a positive number.'),
   date: z.date(),
+  projectId: z.string().optional(),
 });
 
 type TransactionDialogProps = {
@@ -46,6 +54,7 @@ type TransactionDialogProps = {
   type: 'revenue' | 'expense';
   addOrUpdateTransaction: (transaction: Omit<Transaction, 'type'>) => Promise<void>;
   transactionToEdit?: Transaction;
+  projects: Project[];
 };
 
 export function TransactionDialog({
@@ -54,6 +63,7 @@ export function TransactionDialog({
   type,
   addOrUpdateTransaction,
   transactionToEdit,
+  projects = [],
 }: TransactionDialogProps) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -62,6 +72,7 @@ export function TransactionDialog({
       category: '',
       amount: 0,
       date: new Date(),
+      projectId: '',
     },
   });
 
@@ -72,6 +83,7 @@ export function TransactionDialog({
         category: transactionToEdit.category,
         amount: transactionToEdit.amount,
         date: new Date(transactionToEdit.date),
+        projectId: transactionToEdit.projectId || '',
       });
     } else if (isOpen) {
         form.reset({
@@ -79,6 +91,7 @@ export function TransactionDialog({
           category: '',
           amount: 0,
           date: new Date(),
+          projectId: '',
         });
     }
   }, [transactionToEdit, isOpen, form]);
@@ -87,6 +100,7 @@ export function TransactionDialog({
     await addOrUpdateTransaction({
       id: transactionToEdit?.id,
       ...values,
+      projectId: values.projectId || undefined,
     });
     setIsOpen(false);
   };
@@ -117,32 +131,57 @@ export function TransactionDialog({
                 </FormItem>
               )}
             />
-            <FormField
+             <FormField
               control={form.control}
-              name="category"
+              name="projectId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Client Work" {...field} />
-                  </FormControl>
+                  <FormLabel>Project (Optional)</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Assign to a project" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">None</SelectItem>
+                      {projects.map(project => (
+                        <SelectItem key={project.id} value={project.id}>{project.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="amount"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Amount</FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g., 1500" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="grid grid-cols-2 gap-4">
+                <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <FormControl>
+                        <Input placeholder="e.g., Client Work" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+                <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Amount</FormLabel>
+                    <FormControl>
+                        <Input type="number" placeholder="e.g., 1500" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            </div>
             <FormField
               control={form.control}
               name="date"
